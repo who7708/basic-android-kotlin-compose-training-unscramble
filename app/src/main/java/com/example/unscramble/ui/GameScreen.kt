@@ -122,6 +122,14 @@ fun GameScreen(
 
         GameStatus(score = gameUiState.score, modifier = Modifier.padding(20.dp))
     }
+
+    // 游戏结束，重置
+    if (gameUiState.isGameOver) {
+        FinalScoreDialog(
+            score = gameUiState.score,
+            onPlayAgain = { gameViewModel.resetGame() }
+        )
+    }
 }
 
 @Composable
