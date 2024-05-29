@@ -15,16 +15,16 @@
   -->
 
 <resources>
-    <string name="app_name">词汇整理</string>
-    <string name="instructions">用所有的字母把这个词都读出来。</string>
-    <string name="skip">跳过</string>
-    <string name="submit">提交</string>
-    <string name="score">分数: %d</string>
+    <string name="app_name">Unscramble</string>
+    <string name="instructions">Unscramble the word using all the letters.</string>
+    <string name="skip">Skip</string>
+    <string name="submit">Submit</string>
+    <string name="score">Score: %d</string>
     <string name="word_count">%d/10</string>
-    <string name="enter_your_word">输入单词</string>
-    <string name="congratulations">恭喜</string>
-    <string name="you_scored">你的分数: %d</string>
-    <string name="exit">退出</string>
-    <string name="play_again">重新开始</string>
-    <string name="wrong_guess">猜错了！</string>
+    <string name="enter_your_word">Enter your word</string>
+    <string name="congratulations">Congratulations!</string>
+    <string name="you_scored">"You scored: %d"</string>
+    <string name="exit">Exit</string>
+    <string name="play_again">Play Again</string>
+    <string name="wrong_guess">Wrong Guess!</string>
 </resources>
