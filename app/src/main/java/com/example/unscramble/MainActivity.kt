@@ -16,6 +16,7 @@
 
 package com.example.unscramble
 
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -28,6 +29,10 @@ import com.example.unscramble.ui.udptest.UdpTester
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val manager = this
+            .getSystemService(WIFI_SERVICE) as WifiManager
+        val lock = manager.createMulticastLock("test wifi")
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContent {

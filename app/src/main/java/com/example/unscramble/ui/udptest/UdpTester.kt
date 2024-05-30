@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
 import com.example.unscramble.ui.theme.UnscrambleTheme
+import kotlin.concurrent.thread
 
 /**
  * @author Chris
@@ -43,7 +45,10 @@ fun UdpTester(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(mediumPadding),
-        startUdpListener = { udpViewModel.startUdpListener() },
+        startUdpListener = {
+            thread { udpViewModel.startUdpListener() }
+        },
+        localAddress = udpUiState.localAddress,
         hostAddress = udpUiState.hostAddress
     )
 
@@ -53,9 +58,11 @@ fun UdpTester(
 fun UdpTesterLayout(
     modifier: Modifier = Modifier,
     startUdpListener: () -> Unit,
+    localAddress: String,
     hostAddress: String
 ) {
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
+    val scope = rememberCoroutineScope()
 
     Card(
         modifier = modifier,
@@ -72,15 +79,23 @@ fun UdpTesterLayout(
                     .background(MaterialTheme.colorScheme.surfaceTint)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
                     .align(alignment = Alignment.CenterHorizontally),
+                text = localAddress,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.surface
+            )
+            Text(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceTint)
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .align(alignment = Alignment.CenterHorizontally),
                 text = hostAddress,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.surface
             )
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    startUdpListener()
-                }
+                onClick = { startUdpListener() }
             ) {
                 Text(
                     text = stringResource(R.string.start_udp),
