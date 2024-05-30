@@ -108,7 +108,10 @@ class UdpViewModel : ViewModel() {
     private fun updateIpFromUdp(hostAddress: String) {
         _uiState.update {
             it.copy(
-                hostAddress = "${counter.getAndIncrement()} \t $hostAddress"
+                hostAddress = """
+                    序号：${counter.getAndIncrement()}
+                    服务地址：$hostAddress
+                """.trimIndent()
             )
         }
     }
@@ -117,7 +120,10 @@ class UdpViewModel : ViewModel() {
     private fun updateLocalIp(localAddress: String) {
         _uiState.update {
             it.copy(
-                localAddress = "${counter.get()} \t $localAddress"
+                localAddress = """
+                    序号：${counter.get()} 
+                    本机地址：$localAddress
+                """.trimIndent()
             )
         }
     }
