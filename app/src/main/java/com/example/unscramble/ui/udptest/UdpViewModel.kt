@@ -2,16 +2,21 @@ package com.example.unscramble.ui.udptest
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import cn.hutool.core.net.NetUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * @author Chris
@@ -28,6 +33,7 @@ class UdpViewModel : ViewModel() {
 
         // UDP 服务器监听的端口
         private const val UDP_PORT = 8006
+        private val counter = AtomicLong(1)
 
         val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
     }
@@ -41,44 +47,46 @@ class UdpViewModel : ViewModel() {
         if (_uiState.value.isRunning) {
             return
         }
-        this.startUdp()
+        viewModelScope.launch {
+            this@UdpViewModel.startUdp()
+        }
         // executorService.scheduleWithFixedDelay({
         //     this.startUdp()
         // }, 1, 3, TimeUnit.SECONDS)
     }
 
     // 启动监听udp
-    private fun startUdp() {
+    private suspend fun startUdp() {
+        if (_uiState.value.isRunning) {
+            return
+        }
         // 接收的字节大小，客户端发送的数据不能超过这个大小
         val message = ByteArray(1024)
+        val localhostStr: String = NetUtil.getLocalhostStr()
+        this.updateLocalIp(localhostStr)
+        // 建立Socket连接
+        val udpSocket = withContext(Dispatchers.IO) {
+            DatagramSocket(UDP_PORT)
+        }
+        val packet = DatagramPacket(message, message.size)
         try {
-            val localhostStr: String = NetUtil.getLocalhostStr()
-            this.updateLocalIp(localhostStr)
-            // 建立Socket连接
-            val udpSocket = DatagramSocket(UDP_PORT)
-            val packet = DatagramPacket(message, message.size)
-            try {
-                this.updateRunningState(true)
-                Log.i(TAG, "udp 开始监听")
-                // withContext(Dispatchers.IO) {
+            this.updateRunningState(true)
+            Log.i(TAG, "udp 开始监听")
+            withContext(Dispatchers.IO) {
                 // 准备接收数据
                 // udpSocket.broadcast = true
                 udpSocket.receive(packet)
                 val hostAddress = "${packet.address?.hostAddress}:$FE_PORT"
                 Log.d(TAG, "hostAddress:$hostAddress")
                 this@UdpViewModel.updateIpFromUdp(hostAddress)
-                // }
-            } catch (e: IOException) {
-                Log.w(TAG, "udp 错误 IOException", e)
-                e.printStackTrace()
-            } finally {
-                this.updateRunningState(false)
-                // this.resetUiState()
-                udpSocket.close()
             }
-        } catch (e: Exception) {
-            Log.w(TAG, "udp 错误 Exception", e)
+        } catch (e: IOException) {
+            Log.w(TAG, "udp 错误 IOException", e)
             e.printStackTrace()
+        } finally {
+            this.updateRunningState(false)
+            // this.resetUiState()
+            udpSocket.close()
         }
     }
 
@@ -100,7 +108,7 @@ class UdpViewModel : ViewModel() {
     private fun updateIpFromUdp(hostAddress: String) {
         _uiState.update {
             it.copy(
-                hostAddress = hostAddress
+                hostAddress = "${counter.getAndIncrement()} \t $hostAddress"
             )
         }
     }
@@ -109,7 +117,7 @@ class UdpViewModel : ViewModel() {
     private fun updateLocalIp(localAddress: String) {
         _uiState.update {
             it.copy(
-                localAddress = localAddress
+                localAddress = "${counter.get()} \t $localAddress"
             )
         }
     }

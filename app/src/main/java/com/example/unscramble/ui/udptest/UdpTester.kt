@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
 import com.example.unscramble.ui.theme.UnscrambleTheme
-import kotlin.concurrent.thread
 
 /**
  * @author Chris
@@ -46,7 +45,8 @@ fun UdpTester(
             .wrapContentHeight()
             .padding(mediumPadding),
         startUdpListener = {
-            thread { udpViewModel.startUdpListener() }
+            // thread { udpViewModel.startUdpListener() }
+            udpViewModel.startUdpListener()
         },
         localAddress = udpUiState.localAddress,
         hostAddress = udpUiState.hostAddress
