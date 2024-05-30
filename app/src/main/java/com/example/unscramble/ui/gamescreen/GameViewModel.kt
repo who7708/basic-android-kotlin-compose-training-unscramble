@@ -1,4 +1,4 @@
-package com.example.unscramble.ui
+package com.example.unscramble.ui.gamescreen
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
