@@ -38,10 +38,10 @@ class UdpViewModel : ViewModel() {
 
     // 定时监听udp消息
     fun startUdpListener() {
+        if (_uiState.value.isRunning) {
+            return
+        }
         this.startUdp()
-        // if (_uiState.value.isRunning) {
-        //     return
-        // }
         // executorService.scheduleWithFixedDelay({
         //     this.startUdp()
         // }, 1, 3, TimeUnit.SECONDS)
@@ -73,12 +73,18 @@ class UdpViewModel : ViewModel() {
                 e.printStackTrace()
             } finally {
                 this.updateRunningState(false)
+                // this.resetUiState()
                 udpSocket.close()
             }
         } catch (e: Exception) {
             Log.w(TAG, "udp 错误 Exception", e)
             e.printStackTrace()
         }
+    }
+
+    // 重置ui状态
+    private fun resetUiState() {
+        _uiState.update { UdpUiState() }
     }
 
     // 更新 UDP 监听启动状态
