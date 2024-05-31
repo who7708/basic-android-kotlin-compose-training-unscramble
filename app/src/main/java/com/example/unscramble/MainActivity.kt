@@ -41,6 +41,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     UdpTester()
+                    // UdpBroadcastTester()
+                    // UdpMulticastTester()
                 }
             }
         }

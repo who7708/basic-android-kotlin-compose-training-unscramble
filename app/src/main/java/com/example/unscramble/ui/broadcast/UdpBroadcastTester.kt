@@ -1,14 +1,11 @@
-package com.example.unscramble.ui.udptest
+package com.example.unscramble.ui.broadcast
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,8 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
-import com.example.unscramble.ui.broadcast.UdpBroadcastTester
-import com.example.unscramble.ui.multicast.UdpMulticastTester
 import com.example.unscramble.ui.theme.UnscrambleTheme
 
 /**
@@ -38,36 +33,24 @@ import com.example.unscramble.ui.theme.UnscrambleTheme
  * @since 2024/05/30
  */
 @Composable
-fun UdpTester(
-    udpViewModel: UdpViewModel = viewModel()
+fun UdpBroadcastTester(
+    udpBroadcastViewModel: UdpBroadcastViewModel = viewModel()
 ) {
-    val udpUiState by udpViewModel.uiState.collectAsState()
+    val udpUiState by udpBroadcastViewModel.uiState.collectAsState()
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
-    Column(
-        modifier = Modifier
-            .statusBarsPadding()
-            .verticalScroll(rememberScrollState())
-            .safeDrawingPadding()
-            .padding(mediumPadding),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        UdpBroadcastTester()
-        UdpMulticastTester()
-    }
 
-    // UdpTesterLayout(
-    //     modifier = Modifier
-    //         .fillMaxWidth()
-    //         .wrapContentHeight()
-    //         .padding(mediumPadding),
-    //     startUdpListener = {
-    //         // thread { udpViewModel.startUdpListener() }
-    //         udpViewModel.startUdpListener()
-    //     },
-    //     localAddress = udpUiState.localAddress,
-    //     hostAddress = udpUiState.hostAddress
-    // )
+    UdpTesterLayout(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(mediumPadding),
+        startUdpListener = {
+            // thread { udpViewModel.startUdpListener() }
+            udpBroadcastViewModel.startUdpListener()
+        },
+        localAddress = udpUiState.localAddress,
+        hostAddress = udpUiState.hostAddress
+    )
 
 }
 
@@ -127,8 +110,6 @@ fun UdpTesterLayout(
 @Preview(showBackground = true)
 fun UdpTesterPreview() {
     UnscrambleTheme {
-        UdpTester()
-        // UdpBroadcastTester()
-        // UdpMulticastTester()
+        UdpBroadcastTester()
     }
 }
