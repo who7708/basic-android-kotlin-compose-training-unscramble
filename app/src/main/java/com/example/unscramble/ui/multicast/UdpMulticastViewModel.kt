@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
 import java.net.MulticastSocket
@@ -35,6 +34,9 @@ class UdpMulticastViewModel : ViewModel() {
         // UDP 服务器监听的端口
         private const val MULTICAST_PORT: Int = 28006
         private const val MULTICAST_ADDRESS = "224.0.0.1"
+
+        // 读取数据时阻塞链路的超时时间 30s
+        private const val BROADCAST_TIMEOUT = 30_000
         private val counter = AtomicLong(1)
 
         val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -69,7 +71,7 @@ class UdpMulticastViewModel : ViewModel() {
             InetAddress.getByName(MULTICAST_ADDRESS)
         }
         // 建立Socket连接
-        val udpSocket = withContext(Dispatchers.IO) {
+        val datagramSocket = withContext(Dispatchers.IO) {
             val multicastSocket = MulticastSocket(MULTICAST_PORT)
             multicastSocket.joinGroup(group)
             multicastSocket
@@ -79,22 +81,23 @@ class UdpMulticastViewModel : ViewModel() {
         val packet = DatagramPacket(message, message.size)
         try {
             this.updateRunningState(true)
-            Log.i(TAG, "udp 组播开始监听")
+            Log.i(TAG, "UDP组播开始监听")
             withContext(Dispatchers.IO) {
                 // 准备接收数据
                 // udpSocket.broadcast = true
-                udpSocket.receive(packet)
+                datagramSocket.soTimeout = BROADCAST_TIMEOUT
+                datagramSocket.receive(packet)
                 val hostAddress = "${packet.address?.hostAddress}:$FE_PORT"
                 Log.d(TAG, "hostAddress:$hostAddress")
                 this@UdpMulticastViewModel.updateIpFromUdp(hostAddress)
             }
-        } catch (e: IOException) {
-            Log.w(TAG, "udp 错误 IOException", e)
+        } catch (e: Exception) {
+            Log.w(TAG, "UDP组播接收异常", e)
             e.printStackTrace()
         } finally {
             this.updateRunningState(false)
             // this.resetUiState()
-            udpSocket.close()
+            datagramSocket.close()
         }
     }
 

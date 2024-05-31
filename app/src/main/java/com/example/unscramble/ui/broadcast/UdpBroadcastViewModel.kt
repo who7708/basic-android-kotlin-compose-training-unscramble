@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.util.concurrent.Executors
@@ -32,7 +31,10 @@ class UdpBroadcastViewModel : ViewModel() {
         private const val FE_PORT = 8080
 
         // UDP 服务器监听的端口
-        private const val UDP_PORT = 18006
+        private const val BROADCAST_PORT = 18006
+
+        // 读取数据时阻塞链路的超时时间 30s
+        private const val BROADCAST_TIMEOUT = 30_000
         private val counter = AtomicLong(1)
 
         val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -65,28 +67,28 @@ class UdpBroadcastViewModel : ViewModel() {
         val localhostStr: String = NetUtil.getLocalhostStr()
         this.updateLocalIp(localhostStr)
         // 建立Socket连接
-        val udpSocket = withContext(Dispatchers.IO) {
-            DatagramSocket(UDP_PORT)
+        val datagramSocket = withContext(Dispatchers.IO) {
+            DatagramSocket(BROADCAST_PORT)
         }
         val packet = DatagramPacket(message, message.size)
         try {
             this.updateRunningState(true)
-            Log.i(TAG, "udp 开始监听")
+            Log.i(TAG, "UDP广播开始监听")
             withContext(Dispatchers.IO) {
                 // 准备接收数据
-                // udpSocket.broadcast = true
-                udpSocket.receive(packet)
+                // datagramSocket.broadcast = true
+                datagramSocket.soTimeout = BROADCAST_TIMEOUT
+                datagramSocket.receive(packet)
                 val hostAddress = "${packet.address?.hostAddress}:$FE_PORT"
                 Log.d(TAG, "hostAddress:$hostAddress")
                 this@UdpBroadcastViewModel.updateIpFromUdp(hostAddress)
             }
-        } catch (e: IOException) {
-            Log.w(TAG, "udp 错误 IOException", e)
-            e.printStackTrace()
+        } catch (e: Exception) {
+            Log.w(TAG, "UDP广播接收异常", e)
         } finally {
             this.updateRunningState(false)
             // this.resetUiState()
-            udpSocket.close()
+            datagramSocket.close()
         }
     }
 

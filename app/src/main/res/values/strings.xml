@@ -15,7 +15,7 @@
   -->
 
 <resources>
-    <string name="app_name">词汇整理</string>
+    <string name="app_name">UDP测试</string>
     <string name="instructions">用所有的字母把这个词都读出来。</string>
     <string name="skip">跳过</string>
     <string name="submit">提交</string>
