@@ -27,6 +27,7 @@
     <string name="exit">Exit</string>
     <string name="play_again">Play Again</string>
     <string name="wrong_guess">Wrong Guess!</string>
+    <string name="enter_udp_port">Enter Listener Port</string>
     <string name="start_udp_broadcast">UDP Broadcast</string>
     <string name="start_udp_multicast">UDP Multicast</string>
 </resources>

@@ -68,7 +68,8 @@ class UdpBroadcastViewModel : ViewModel() {
         this.updateLocalIp(localhostStr)
         // 建立Socket连接
         val datagramSocket = withContext(Dispatchers.IO) {
-            DatagramSocket(BROADCAST_PORT)
+            // DatagramSocket(BROADCAST_PORT)
+            DatagramSocket(_uiState.value.broadcastPort)
         }
         val packet = DatagramPacket(message, message.size)
         try {
@@ -126,6 +127,14 @@ class UdpBroadcastViewModel : ViewModel() {
                     序号：${counter.get()} 
                     本机地址：$localAddress
                 """.trimIndent()
+            )
+        }
+    }
+
+    fun onEnterBroadcastPort(broadcastPort: String) {
+        _uiState.update {
+            it.copy(
+                broadcastPort = broadcastPort.toInt()
             )
         }
     }
