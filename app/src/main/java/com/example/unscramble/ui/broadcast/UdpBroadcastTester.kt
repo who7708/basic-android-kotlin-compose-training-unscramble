@@ -57,10 +57,11 @@ fun UdpBroadcastTester(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(mediumPadding),
-        localAddress = udpUiState.localAddress,
-        broadcastPort = udpUiState.broadcastPort,
-        hostAddress = udpUiState.hostAddress,
-        urlToOpen = udpUiState.urlToOpen,
+        udpUiState,
+        // localAddress = udpUiState.localAddress,
+        // broadcastPort = udpUiState.broadcastPort,
+        // hostAddress = udpUiState.hostAddress,
+        // urlToOpen = udpUiState.urlToOpen,
         startUdpListener = {
             // thread { udpViewModel.startUdpListener() }
             udpBroadcastViewModel.startUdpListener()
@@ -87,10 +88,11 @@ fun extractAndConvertToUrl(input: String): String {
 @Composable
 fun UdpTesterLayout(
     modifier: Modifier = Modifier,
-    localAddress: String,
-    broadcastPort: Int,
-    hostAddress: String,
-    urlToOpen: String,
+    udpUiState: UdpBroadcastUiState,
+    // localAddress: String,
+    // broadcastPort: Int,
+    // hostAddress: String,
+    // urlToOpen: String,
     startUdpListener: () -> Unit,
     onEnterBroadcastPort: (String) -> Unit,
 ) {
@@ -114,7 +116,7 @@ fun UdpTesterLayout(
             modifier = Modifier.padding(mediumPadding)
         ) {
             OutlinedTextField(
-                value = "$broadcastPort",
+                value = "${udpUiState.broadcastPort}",
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
                 modifier = Modifier.fillMaxWidth(),
@@ -142,7 +144,7 @@ fun UdpTesterLayout(
                     .background(MaterialTheme.colorScheme.surfaceTint)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
                     .align(alignment = Alignment.CenterHorizontally),
-                text = localAddress,
+                text = udpUiState.localAddress,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.surface
             )
@@ -153,20 +155,20 @@ fun UdpTesterLayout(
                     .padding(horizontal = 10.dp, vertical = 4.dp)
                     .align(alignment = Alignment.CenterHorizontally)
                     .clickable {
-                        if (urlToOpen.isBlank()) {
+                        if (udpUiState.urlToOpen.isBlank()) {
                             Log.i("UdpBroadcastTester", "UdpTesterLayout: url is blank")
                             return@clickable
                         }
                         val intent = android.content.Intent(
                             android.content.Intent.ACTION_VIEW,
-                            android.net.Uri.parse(urlToOpen)
+                            android.net.Uri.parse(udpUiState.urlToOpen)
                         )
                         // 打开浏览器
                         if (context is ComponentActivity) {
                             openBrowserLauncher.launch(intent)
                         }
                     },
-                text = hostAddress,
+                text = udpUiState.hostAddress,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.surface
             )
