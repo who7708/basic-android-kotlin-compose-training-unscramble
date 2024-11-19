@@ -1,6 +1,11 @@
 package com.example.unscramble.ui.broadcast
 
+import android.util.Log
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -32,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.unscramble.R
 import com.example.unscramble.ui.theme.UnscrambleTheme
+import java.util.regex.Pattern
 
 /**
  * @author Chris
@@ -53,6 +60,7 @@ fun UdpBroadcastTester(
         localAddress = udpUiState.localAddress,
         broadcastPort = udpUiState.broadcastPort,
         hostAddress = udpUiState.hostAddress,
+        urlToOpen = udpUiState.urlToOpen,
         startUdpListener = {
             // thread { udpViewModel.startUdpListener() }
             udpBroadcastViewModel.startUdpListener()
@@ -62,17 +70,39 @@ fun UdpBroadcastTester(
 
 }
 
+fun extractAndConvertToUrl(input: String): String {
+    val pattern = Pattern.compile("(d{1,3}.d{1,3}.d{1,3}.d{1,3}):(d+)")
+    val matcher = pattern.matcher(input)
+
+    return if (matcher.find()) {
+        val ip = matcher.group(1)
+        val port = matcher.group(2)
+        "http://$ip:$port"
+    } else {
+        ""
+    }
+}
+
+
 @Composable
 fun UdpTesterLayout(
     modifier: Modifier = Modifier,
     localAddress: String,
     broadcastPort: Int,
     hostAddress: String,
+    urlToOpen: String,
     startUdpListener: () -> Unit,
     onEnterBroadcastPort: (String) -> Unit,
 ) {
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val openBrowserLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        // 这里可以处理打开浏览器后的结果，不过一般打开浏览器不需要处理返回结果
+    }
 
     Card(
         modifier = modifier,
@@ -121,7 +151,21 @@ fun UdpTesterLayout(
                     .clip(MaterialTheme.shapes.medium)
                     .background(MaterialTheme.colorScheme.surfaceTint)
                     .padding(horizontal = 10.dp, vertical = 4.dp)
-                    .align(alignment = Alignment.CenterHorizontally),
+                    .align(alignment = Alignment.CenterHorizontally)
+                    .clickable {
+                        if (urlToOpen.isBlank()) {
+                            Log.i("UdpBroadcastTester", "UdpTesterLayout: url is blank")
+                            return@clickable
+                        }
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse(urlToOpen)
+                        )
+                        // 打开浏览器
+                        if (context is ComponentActivity) {
+                            openBrowserLauncher.launch(intent)
+                        }
+                    },
                 text = hostAddress,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.surface

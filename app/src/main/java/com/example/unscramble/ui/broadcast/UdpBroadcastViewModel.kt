@@ -114,7 +114,8 @@ class UdpBroadcastViewModel : ViewModel() {
                 hostAddress = """
                     序号：${counter.getAndIncrement()}
                     服务地址：$hostAddress
-                """.trimIndent()
+                """.trimIndent(),
+                urlToOpen = "http://$hostAddress"
             )
         }
     }
