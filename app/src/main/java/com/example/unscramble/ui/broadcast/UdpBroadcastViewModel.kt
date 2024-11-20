@@ -1,6 +1,10 @@
 package com.example.unscramble.ui.broadcast
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cn.hutool.core.net.NetUtil
@@ -29,12 +33,13 @@ class UdpBroadcastViewModel : ViewModel() {
 
         // 前置机默认端口
         private const val FE_PORT = 8080
+        // private const val FE_PORT = 30000
 
         // UDP 服务器监听的端口
         private const val BROADCAST_PORT = 18006
 
         // 读取数据时阻塞链路的超时时间 30s
-        private const val BROADCAST_TIMEOUT = 30_000
+        private const val BROADCAST_TIMEOUT = 60_000
         private val counter = AtomicLong(1)
 
         val executorService: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
@@ -44,13 +49,21 @@ class UdpBroadcastViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(UdpBroadcastUiState())
     val uiState: StateFlow<UdpBroadcastUiState> = _uiState.asStateFlow()
 
+    // 弹窗提示使用
+    private val _snackbarMessage = MutableLiveData<String>()
+    val snackbarMessage: LiveData<String> = _snackbarMessage
+    fun showSnackbarMessage(message: String) {
+        _snackbarMessage.value = message
+    }
+
     // 定时监听udp消息
-    fun startUdpListener() {
+    fun startUdpListener(ctx: Context) {
         if (_uiState.value.isRunning) {
+            Toast.makeText(ctx, "正常监听udp广播，请稍后再试", Toast.LENGTH_SHORT).show()
             return
         }
         viewModelScope.launch {
-            this@UdpBroadcastViewModel.startUdp()
+            this@UdpBroadcastViewModel.startUdp(ctx)
         }
         // executorService.scheduleWithFixedDelay({
         //     this.startUdp()
@@ -58,8 +71,9 @@ class UdpBroadcastViewModel : ViewModel() {
     }
 
     // 启动监听udp
-    private suspend fun startUdp() {
+    private suspend fun startUdp(ctx: Context) {
         if (_uiState.value.isRunning) {
+            Toast.makeText(ctx, "正常监听udp广播，请稍后再试", Toast.LENGTH_SHORT).show()
             return
         }
         // 接收的字节大小，客户端发送的数据不能超过这个大小
@@ -86,6 +100,8 @@ class UdpBroadcastViewModel : ViewModel() {
             }
         } catch (e: Exception) {
             Log.w(TAG, "UDP广播接收异常", e)
+            this.updateRunningState(false)
+            Toast.makeText(ctx, "UDP广播接收异常" + e.message, Toast.LENGTH_SHORT).show()
         } finally {
             this.updateRunningState(false)
             // this.resetUiState()

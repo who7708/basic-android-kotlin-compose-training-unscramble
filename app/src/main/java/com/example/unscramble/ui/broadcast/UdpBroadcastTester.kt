@@ -1,5 +1,6 @@
 package com.example.unscramble.ui.broadcast
 
+import android.content.Context
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -62,9 +63,9 @@ fun UdpBroadcastTester(
         // broadcastPort = udpUiState.broadcastPort,
         // hostAddress = udpUiState.hostAddress,
         // urlToOpen = udpUiState.urlToOpen,
-        startUdpListener = {
+        startUdpListener = { ctx ->
             // thread { udpViewModel.startUdpListener() }
-            udpBroadcastViewModel.startUdpListener()
+            udpBroadcastViewModel.startUdpListener(ctx)
         },
         onEnterBroadcastPort = { udpBroadcastViewModel.onEnterBroadcastPort(it) },
     )
@@ -93,7 +94,7 @@ fun UdpTesterLayout(
     // broadcastPort: Int,
     // hostAddress: String,
     // urlToOpen: String,
-    startUdpListener: () -> Unit,
+    startUdpListener: (Context) -> Unit,
     onEnterBroadcastPort: (String) -> Unit,
 ) {
     val mediumPadding = dimensionResource(R.dimen.padding_medium)
@@ -135,7 +136,7 @@ fun UdpTesterLayout(
                     keyboardType = KeyboardType.Number
                 ),
                 keyboardActions = KeyboardActions(
-                    onDone = { startUdpListener() }
+                    onDone = { startUdpListener(context) }
                 )
             )
             Text(
@@ -174,7 +175,7 @@ fun UdpTesterLayout(
             )
             Button(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { startUdpListener() }
+                onClick = { startUdpListener(context) }
             ) {
                 Text(
                     text = stringResource(R.string.start_udp_broadcast),
